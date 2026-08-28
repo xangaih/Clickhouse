@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { recordProposalEvent } from '@/lib/proposalLog';
 
+// Never statically cache — this always needs to read live data, and Next.js
+// GET route handlers are cached by default unless told otherwise.
+export const dynamic = 'force-dynamic';
+
 // Logging only — a dismissed proposal must never touch the database. This endpoint
 // exists purely so the human-in-the-loop pattern is visible in server logs for the
 // demo, not because dismissal needs to be persisted anywhere.

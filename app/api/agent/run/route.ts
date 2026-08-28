@@ -4,6 +4,10 @@ import { getDailyAccuracy, getDecliningStudents, getBookCandidates } from '@/lib
 import { generateAlert } from '@/lib/agent';
 import { studentToEmbedding } from '@/lib/embeddings';
 
+// Never statically cache — this always needs to read live data, and Next.js
+// GET route handlers are cached by default unless told otherwise.
+export const dynamic = 'force-dynamic';
+
 export async function POST() {
   try {
     const declining = await getDecliningStudents();

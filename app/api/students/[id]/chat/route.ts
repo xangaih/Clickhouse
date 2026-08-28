@@ -14,6 +14,10 @@ import { studentToEmbedding } from '@/lib/embeddings';
 import { recordProposalEvent } from '@/lib/proposalLog';
 import type { ChatMessage, Proposal } from '@/lib/types';
 
+// Never statically cache — this always needs to read live data, and Next.js
+// GET route handlers are cached by default unless told otherwise.
+export const dynamic = 'force-dynamic';
+
 // Multi-round tool use (up to 6 sequential Anthropic calls, see lib/agent.ts) can
 // take longer than a serverless platform's default function timeout. Request the
 // longest duration the deployment's plan allows rather than silently truncating

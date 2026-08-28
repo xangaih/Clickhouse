@@ -3,6 +3,10 @@ import { sql, pgTimestampToIso } from '@/lib/db';
 import { getDailyAccuracy, getDecliningStudents, getEngagementDrop } from '@/lib/queries';
 import type { StudentMetric } from '@/lib/types';
 
+// Never statically cache — this always needs to read live data, and Next.js
+// GET route handlers are cached by default unless told otherwise.
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const students = await sql`

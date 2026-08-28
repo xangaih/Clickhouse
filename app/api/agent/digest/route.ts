@@ -5,6 +5,10 @@ import { generateWeeklyDigest } from '@/lib/agent';
 import { accuracyNearDate } from '@/lib/accuracy';
 import type { WeeklyDigestInput } from '@/lib/types';
 
+// Never statically cache — this always needs to read live data, and Next.js
+// GET route handlers are cached by default unless told otherwise.
+export const dynamic = 'force-dynamic';
+
 export async function POST() {
   try {
     const [currentlyFlagged, flaggedWeekAgo, classTrend, allStudents, interventions] = await Promise.all([

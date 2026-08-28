@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql, pgTimestampToIso } from '@/lib/db';
 import { recordProposalEvent } from '@/lib/proposalLog';
 
+// Never statically cache — this always needs to read live data, and Next.js
+// GET route handlers are cached by default unless told otherwise.
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const { studentId, bookId } = await req.json();
