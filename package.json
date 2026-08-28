@@ -1,0 +1,38 @@
+{
+  "name": "readpulse",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "seed": "tsx scripts/run-all-seed.ts",
+    "seed:postgres": "tsx scripts/seed-postgres.ts",
+    "seed:books": "tsx scripts/seed-books.ts",
+    "seed:events": "tsx scripts/generate-events.ts",
+    "sync:dims": "tsx scripts/sync-dimensions.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.0",
+    "@clickhouse/client": "^1.0.0",
+    "dotenv": "^16.4.0",
+    "framer-motion": "^13.1.1",
+    "lucide-react": "^1.35.0",
+    "next": "^14.2.0",
+    "pg": "^8.23.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "recharts": "^2.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  }
+}
