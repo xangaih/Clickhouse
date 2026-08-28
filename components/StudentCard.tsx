@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingDown, CheckCircle2, MessageCircle, LayoutGrid, CalendarOff } from 'lucide-react';
+import { TrendingDown, CheckCircle2, MessageCircle, LayoutGrid, CalendarOff, Flag } from 'lucide-react';
 import Sparkline from './Sparkline';
 import StudentChat from './StudentChat';
 import SessionHeatmap from './SessionHeatmap';
@@ -84,6 +84,12 @@ export default function StudentCard({ student: s }: { student: StudentMetric }) 
                 Reading less often
               </span>
             )}
+            {s.needsFollowup && (
+              <span className="text-xs font-medium bg-orange-100 text-orange-800 px-2.5 py-1 rounded-full flex items-center gap-1 whitespace-nowrap">
+                <Flag size={13} strokeWidth={2} />
+                Follow-up
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -96,6 +102,16 @@ export default function StudentCard({ student: s }: { student: StudentMetric }) 
               At intervention: {beforePct}% <span className="text-emerald-700">→</span> now: {afterPct}%
             </span>
           )}
+        </div>
+      )}
+      {s.needsFollowup && (
+        <div className="mt-3 text-xs bg-orange-50 rounded-xl px-3 py-2 text-orange-900">
+          {s.needsFollowupReason ?? 'Flagged for a personal check-in.'}
+        </div>
+      )}
+      {s.currentBook && (
+        <div className="mt-3 text-xs text-ink-muted">
+          Currently reading <span className="font-medium text-ink">{s.currentBook.title}</span>
         </div>
       )}
       <div className="flex items-center gap-4 mt-3">

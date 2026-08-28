@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { TrendingDown, CheckCircle2, MessageCircle, LayoutGrid, CalendarOff } from 'lucide-react';
+import { TrendingDown, CheckCircle2, MessageCircle, LayoutGrid, CalendarOff, Flag, BookOpen } from 'lucide-react';
 import PageHeader from '@/components/PageHeader';
 import StudentTrendChart from '@/components/StudentTrendChart';
 import StudentChat from '@/components/StudentChat';
@@ -75,6 +75,14 @@ export default async function StudentProfilePage({ params }: { params: { id: str
                 Reading less often
               </span>
             )}
+            {student.needsFollowup && (
+              <span className="text-xs font-medium bg-orange-100 text-orange-800 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                <Flag size={13} strokeWidth={2} />
+                Follow-up
+                {student.needsFollowupAt &&
+                  ` ${new Date(student.needsFollowupAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`}
+              </span>
+            )}
           </div>
         </div>
         <StudentTrendChart data={student.dailyAccuracy} />
@@ -82,6 +90,23 @@ export default async function StudentProfilePage({ params }: { params: { id: str
           <SimulateSessionButton studentId={student.studentId} />
         </div>
       </section>
+
+      {student.currentBook && (
+        <section className="bg-white/80 backdrop-blur rounded-2xl shadow-card p-6 sm:p-8">
+          <h2 className="text-[15px] font-semibold text-ink flex items-center gap-2 mb-1.5">
+            <BookOpen size={16} className="text-accent" strokeWidth={1.75} />
+            Currently reading
+          </h2>
+          <p className="text-sm text-ink-muted">
+            <span className="font-medium text-ink">{student.currentBook.title}</span> — assigned{' '}
+            {new Date(student.currentBook.assignedAt).toLocaleDateString(undefined, {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            })}
+          </p>
+        </section>
+      )}
 
       {student.intervention && (
         <section className="bg-emerald-50 rounded-2xl p-6 sm:p-8">
@@ -93,6 +118,28 @@ export default async function StudentProfilePage({ params }: { params: { id: str
           {beforePct !== null && (
             <p className="text-sm text-emerald-900/80 mt-1">
               At intervention: {beforePct}% <span className="text-emerald-700">→</span> now: {recentPct}%
+            </p>
+          )}
+        </section>
+      )}
+
+      {student.needsFollowup && (
+        <section className="bg-orange-50 rounded-2xl p-6 sm:p-8">
+          <h2 className="text-[15px] font-semibold text-orange-900 flex items-center gap-2 mb-1.5">
+            <Flag size={16} strokeWidth={1.75} />
+            Flagged for follow-up
+          </h2>
+          <p className="text-sm text-orange-900/80">
+            {student.needsFollowupReason ?? 'Marked for a personal check-in.'}
+          </p>
+          {student.needsFollowupAt && (
+            <p className="text-xs text-orange-900/60 mt-1">
+              Flagged{' '}
+              {new Date(student.needsFollowupAt).toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
             </p>
           )}
         </section>

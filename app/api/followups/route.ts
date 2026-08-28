@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sql } from '@/lib/db';
+import { sql, pgTimestampToIso } from '@/lib/db';
 import { recordProposalEvent } from '@/lib/proposalLog';
 
 const REASON_MAX_LENGTH = 500;
@@ -17,8 +17,11 @@ export async function POST(req: NextRequest) {
     }
     const safeReason = typeof reason === 'string' ? reason.slice(0, REASON_MAX_LENGTH) : null;
 
-    await sql`
-      UPDATE students SET needs_followup = true, needs_followup_at = now() WHERE id = ${studentId}
+    const [row] = await sql`
+      UPDATE students
+      SET needs_followup = true, needs_followup_at = now(), needs_followup_reason = ${safeReason}
+      WHERE id = ${studentId}
+      RETURNING needs_followup_at
     `;
 
     recordProposalEvent({
@@ -28,7 +31,12 @@ export async function POST(req: NextRequest) {
       outcome: 'confirmed',
     });
 
-    return NextResponse.json({ studentId, needsFollowup: true });
+    return NextResponse.json({
+      studentId,
+      needsFollowup: true,
+      needsFollowupAt: pgTimestampToIso(row.needs_followup_at),
+      needsFollowupReason: safeReason,
+    });
   } catch (err) {
     console.error('POST /api/followups failed', err);
     return NextResponse.json({ error: 'Failed to record follow-up flag' }, { status: 500 });

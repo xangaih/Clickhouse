@@ -20,7 +20,8 @@ CREATE TABLE students (
   trajectory TEXT,             -- 'steady' | 'improving' | 'struggling' | 'quiet_decline' | 'recovered'
                                 -- — stored so the generator and any debugging can look up what each student "is"
   needs_followup BOOLEAN DEFAULT false,   -- set by a confirmed propose_followup_flag chat proposal
-  needs_followup_at TIMESTAMP
+  needs_followup_at TIMESTAMP,
+  needs_followup_reason TEXT
 );
 
 CREATE TABLE books (

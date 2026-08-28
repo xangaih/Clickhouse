@@ -12,6 +12,14 @@ export interface StudentMetric {
     note: string | null;
     createdAt: string;
   } | null;
+  needsFollowup: boolean;
+  needsFollowupAt: string | null;
+  needsFollowupReason: string | null;
+  currentBook: {
+    bookId: number;
+    title: string;
+    assignedAt: string;
+  } | null;
 }
 
 export interface BookCandidate {
