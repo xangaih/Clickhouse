@@ -14,6 +14,12 @@ import { studentToEmbedding } from '@/lib/embeddings';
 import { recordProposalEvent } from '@/lib/proposalLog';
 import type { ChatMessage, Proposal } from '@/lib/types';
 
+// Multi-round tool use (up to 6 sequential Anthropic calls, see lib/agent.ts) can
+// take longer than a serverless platform's default function timeout. Request the
+// longest duration the deployment's plan allows rather than silently truncating
+// mid-stream on a slow multi-tool-call turn.
+export const maxDuration = 60;
+
 const NOTE_MAX_LENGTH = 500;
 
 const TOOLS: ToolDefinition[] = [

@@ -73,6 +73,12 @@ don't have it. Don't call tools for data the question doesn't need. If a questio
 specific session's detail (e.g. "what did a bad session look like"), call
 get_recent_sessions first to find the right session_id, then get_session_detail.
 
+You have a limited number of tool-call turns. If a question clearly needs several pieces
+of data (e.g. accuracy trend + engagement pattern + book recommendations before
+proposing something), call all of them together in the same turn rather than one at a
+time across separate turns — that's both faster and less likely to run you out of turns
+before you can answer.
+
 Ground every answer in what the tools actually return. Describe trends in plain language
 (e.g. "steady around 85% for weeks, dipping the last few days") rather than diagnosing —
 never use clinical or diagnostic language (no "learning disability", "dyslexia", "ADHD",
@@ -93,6 +99,11 @@ intervention below") — never say the action has already been taken. Only propo
 intervention or reassignment using a book that actually came from
 get_book_recommendations.
 
+Never write text like "I've drafted X below" or "see the cards below" unless you actually
+called that proposal tool earlier in THIS SAME turn — the teacher will see no card if you
+didn't, which is confusing and looks broken. If you're going to say a proposal exists,
+call the tool for it first, in the same turn, before writing that sentence.
+
 If asked something the data genuinely can't answer, say so plainly. Keep answers short —
 a few sentences, not an essay. Respond in plain text, not JSON.`;
 
@@ -106,7 +117,29 @@ export interface ToolDefinition {
   };
 }
 
-const MAX_TOOL_ROUNDS = 4;
+// Was 4 — too tight now that there are 9 tools (6 read + 3 propose) and a thorough
+// "what should we do" answer often legitimately wants 3-5 of them before replying.
+// The model doesn't always batch multiple tool calls into one turn even when it
+// could, so 4 turns was hit in practice, not just in theory — confirmed live: the
+// same question succeeded in 2 turns on one run and needed more on another. Raised
+// to 6 for real headroom; see chat route's `maxDuration` for the latency tradeoff
+// this implies.
+const MAX_TOOL_ROUNDS = 6;
+
+// The system prompt tells the model never to claim a draft exists without actually
+// calling the proposal tool first — but that's an instruction, not a guarantee.
+// Confirmed live: it still sometimes writes "I've drafted X below" and just... doesn't
+// call the tool, especially on longer multi-part questions. Since the whole point of
+// proposal cards is that the teacher can trust what the UI shows, don't rely on prompt
+// adherence alone for a user-trust-relevant inconsistency — catch it deterministically
+// and correct the text before it reaches the frontend.
+const DRAFT_CLAIM_PATTERN =
+  /\b(draft(ed|ing)?|propos(e[ds]?|ing)|see (it|them|the (card|cards|proposal|proposals))|below for (your )?review|cards? below)\b/i;
+
+function reconcileReplyWithProposals(reply: string, proposals: Proposal[]): string {
+  if (proposals.length > 0 || !DRAFT_CLAIM_PATTERN.test(reply)) return reply;
+  return `${reply}\n\n(Correction: I described a draft above but didn't actually create one — ask again if you'd like me to put one together.)`;
+}
 
 export async function chatWithTools(
   studentName: string,
@@ -129,7 +162,8 @@ export async function chatWithTools(
 
     if (response.stop_reason !== 'tool_use') {
       const textBlock = response.content.find((b) => b.type === 'text');
-      return { reply: textBlock?.type === 'text' ? textBlock.text : '', proposals };
+      const reply = textBlock?.type === 'text' ? textBlock.text : '';
+      return { reply: reconcileReplyWithProposals(reply, proposals), proposals };
     }
 
     conversation.push({ role: 'assistant', content: response.content });
